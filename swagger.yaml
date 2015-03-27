@@ -1,0 +1,288 @@
+swagger: "2.0"
+info:
+  title: LCI Context Aware Recommendation SE
+  description: REST APIs for both Context Aware Recommendation modules - Activity and Context Recognition module and Recommendation Matrix Preparation module.
+  version: 1.0.0
+  contact:
+    name: REST API Support
+    email: "milenko.tosic@lacitadelleing.com"
+host: "89.216.30.67:8080"
+schemes:
+  - http
+basePath: /
+produces:
+  - application/json
+paths:
+  /recommend/:
+    get:
+      produces:
+        - application/json
+      summary: Return POI recommendation
+      description: "Sends recommendation request from mobile application to the Recommendation Matrix         Preparation server module. This SE module returns recommended POIs and actions            based on user's context and activity.\n"
+      parameters: 
+        - name: uuid
+          in: query
+          description: User id based on Cordova plug-in org.apache.cordova.device 0.2.10 “Device”
+          required: true
+          type: string
+        - name: lat
+          in: query
+          description: Latitude component of user location.
+          required: true
+          type: number
+          format: double
+        - name: lon
+          in: query
+          description: Longitude component of user location.
+          required: true
+          type: number
+          format: double
+        - name: ts
+          in: query
+          description: Current time on user device in miliseconds.
+          required: true
+          type: number
+          format: double
+        - name: ac
+          in: query
+          description: Specifies recommendation type (0-(default) recommendation based only on the current location; 1-recommendation based on the current activity; 2-recommendation based on the current temporal and spatial context; 3-recommendation based on the current activity and temporal/spatial context)
+          required: false
+          type: integer
+          format: int32
+        - name: poi_num
+          in: query
+          description: Number of POIs to be returned from the recommender module (default = 5).
+          required: false
+          type: integer
+          format: int32
+        - name: ignore
+          in: query
+          description: Indication that user is not interested in the recommended POI (value=poi_id).
+          required: false
+          type: string
+      tags:
+        - POI Recommendation
+      responses:
+        "200":
+          description: Array of JSON formatted POIs (in line with POI JSON format defined in POI Provider GE) provided by the recommender plus recognized acitivty and user context.
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/POI"
+              activity: Recognized user activity
+              context: Recognized user context
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/Error"
+  /ac/:
+    post:
+      produces:
+        - application/json
+      summary: Sends sensory and contextual data from mobile app
+      description: "Enables sensory data to be sent to the Activity and Context Recognition module from mobile devices. Sensory data include acceleration, gyroscope, GPS coordinates and surrounding WiFi network SSIDs with SNR levels.\n"
+      parameters:
+        - name: uuid
+          in: body
+          description: User id based on Cordova plug-in org.apache.cordova.device 0.2.10 “Device”
+          required: true
+          type: string
+        - name: location
+          in: body
+          description: Current location of the user
+          required: true
+          schema:
+            timestamp: Current time on user device in miliseconds
+            $ref: "#/definitions/coordinates"
+        - name: acceleration
+          in: body
+          description: "Acceleration accross x, y and z axes"
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/acceleration"
+        - name: gyroscope
+          in: body
+          description: "Angular acceleration accross x, y and z axes"
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/gyroscope"
+        - name: wifi
+          in: body
+          description: SSID of surrounding WiFi networks
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/WiFi"
+        - name: wifi_connected
+          in: body
+          description: SSID of the WiFi network to which the end user is connected
+          required: true
+          type: string
+      tags:
+        - Sensory data
+      responses:
+        "200":
+          description: "Success []"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      summary: Request for activity and context recognition
+      description: Request for activity/context classification with parameters for configuring the activity/context recognition module. Sent from Recommendation Matrix Preparation module to the Activity and Context Recognition module.
+      parameters:
+        - name: uuid
+          in: query
+          description: User id based on Cordova plug-in org.apache.cordova.device 0.2.10 “Device”
+          required: true
+          type: string
+        - name: ac
+          in: query
+          description: Choosing activity and/or context recognition (1-only activity recognition; 2-only spatial and temporal context recognition; 3-both context and activity recognition)
+          required: true
+          type: integer
+          format: int32
+        - name: alg
+          in: query
+          type: string
+          description: Specification of classification algorithm to be used (dt-decision tree algorithm for deterministic classification; svm-support vector machine algorithm which returns probability vector accross all activity classes)
+        - name: fs
+          in: query
+          type: string
+          description: Specification of the feature set to be used for classification (standard-standard feature set (21 features used for recognition); enhanced-full set of features (39 features used for recognition))
+        - name: tp
+          in: query
+          description: Period in seconds for which the activity context recognition needs to be performed (default 3 seconds).
+          required: false
+          type: number
+          format: double
+      tags:
+        - Request activity and context
+      responses:
+        "200":
+          description: Probability vector accross all activity classes or deterministic activity class with user spatial context (connected and surrounding WiFi SSIDs and direction of movement during the specified time period in tp parameter)
+          schema:
+            $ref: "#/definitions/activity_and_context"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/Error"
+definitions:
+  POI:
+    schema:
+      type: string
+      description: Unique identifier representing a specific POI
+      schema:
+        fw_core: POI container
+        schema:
+          properties:
+            location:
+              description: Location container
+              schema:
+                wgs84: FI WARE location container
+                properties:
+                  latitude: 
+                    type: number
+                    format: double
+                    description: Latitude component of the POI location
+                  longitude: 
+                    type: number
+                    format: double
+                    description: Longitude component of the POI location
+            category: 
+              type: string
+              description: POI category specified in Recommendation Matrix Preparation module
+            name:
+              type: string
+              description: POI name obtained from Foursquare service
+            label:
+              type: string
+              description: POI sub-category defined by Foursquare service
+  activity_and_context:
+    properties:
+      activity_vector:
+        type: array
+        items:
+          type: number
+          format: double
+        description: Array of classification probabilities accross all activity classes (walking, standing, running, sitting, laying, upstairs, downstairs)
+      uuid:
+        type: string
+        description: Unique user identifier used by other SE components
+      activity:
+        type: string
+        description: Deterministic activity class based on the last 128 sensory samples
+      wifi:
+        type: string
+        description: SSID of WiFi network to which the user deviceis connected
+  coordinates:
+    properties:
+      latitude:
+        type: number
+        format: double
+        description: Latitude component of the current location
+      longitude:
+        type: number
+        format: double
+        description: Longitude component of the current location
+  acceleration:
+    properties:
+      timestamp:
+        type: number
+        format: double
+        description: Current time on user device in miliseconds
+      x:
+        type: number
+        format: double
+        description: Acceleration accross x axis
+      "y":
+        type: number
+        format: double
+        description: Acceleration accross y axis
+      z:
+        type: number
+        format: double
+        description: Acceleration accross z axis
+  gyroscope:
+    properties:
+      timestamp:
+        type: number
+        format: double
+        description: Current time on user device in miliseconds
+      x:
+        type: number
+        format: double
+        description: Gyroscope x axis
+      "y":
+        type: number
+        format: double
+        description: Gyroscope y axis
+      z:
+        type: number
+        format: double
+        description: Gyroscope z axis
+  WiFi:
+    properties:
+      ssids:
+        type: array
+        items:
+          type: string
+        description: Gyroscope x axis
+      timestamp:
+        type: number
+        format: double
+        description: Current time on user device in miliseconds
+  Error:
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string

@@ -1,0 +1,21 @@
+# LCI-FIC2-SE-Activity-And-Context-Rec
+Source code for the Activity and Context Recognition module of the Context Aware Recomemndation SE
+
+Installation instructions
+
+Install python and django with the numpy scipy and scikit learn libraries.
+Run the generation scripts inside /Classifier directory in the following order :
+generate_dataset.py
+generate_classifier.py
+generate_classifier_acceleration.py
+generate_enhanced_classifier.py
+
+modify the /ActivityRecognition/ActivityRecognition/settings.py file so it uses your database currenty it uses postgres sql.
+A tutorial on how to setup posgres can be found on this link : https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-django-with-postgres-nginx-and-gunicorn
+
+Run /ActivityRecognition/manage.py syncdb to create the tables for the models.
+And last but not least run /ActivityRecognition/manage.py runserver {ip}:{port}
+
+An example on how to use the rest api can be found on the default webpage on {ip}:{port}
+If some problems occur during the installation or usage contact Dimitrije Jankov on dimitrije.jankov@vizlore.com
+
