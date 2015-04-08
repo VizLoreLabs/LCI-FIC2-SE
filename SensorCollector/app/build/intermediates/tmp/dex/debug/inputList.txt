@@ -1,0 +1,5 @@
+/home/ognjen/AndroidProjects/SensorCollector/app/build/intermediates/classes/debug
+/home/ognjen/AndroidProjects/SensorCollector/app/build/intermediates/pre-dexed/debug/support-annotations-21.0.3-cb6d13dd20c58631f2292c0f8e7f53a65d5fcdff.jar
+/home/ognjen/AndroidProjects/SensorCollector/app/build/intermediates/pre-dexed/debug/internal_impl-21.0.3-71fa7f71db121fb438f722a2cc7d6ec1f36bea01.jar
+/home/ognjen/AndroidProjects/SensorCollector/app/build/intermediates/pre-dexed/debug/classes-3de1f8156e95f3c3be66339dd23e6632284c9b6c.jar
+/home/ognjen/AndroidProjects/SensorCollector/app/build/intermediates/pre-dexed/debug/classes-492a8977d8450ef57723d8867afb20ce74eb1b5c.jar
