@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.vizlore.fic" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <preference name="loglevel" value="DEBUG" />
+    <feature name="Device">
+        <param name="android-package" value="org.apache.cordova.device.Device" />
+    </feature>
+    <feature name="Accelerometer">
+        <param name="android-package" value="org.apache.cordova.devicemotion.AccelListener" />
+    </feature>
+    <feature name="cordovaWifiInfo">
+        <param name="android-package" value="org.apache.cordova.wifiinfo.cordovaWifiInfo" />
+    </feature>
+    <feature name="Gyroscope">
+        <param name="android-package" value="org.dartlang.phonegap.gyroscope.GyroscopeListener" />
+    </feature>
+    <icon density="ldpi" src="res/icons/mdpi.png" />
+    <icon density="mdpi" src="res/icons/mdpi.png" />
+    <icon density="hdpi" src="res/icons/hdpi.png" />
+    <icon density="xhdpi" src="res/icons/xhdpi.png" />
+    <icon density="xxhdpi" src="res/icons/xxhdpi.png" />
+    <splash density="land-hdpi" src="res/splash_screen/splash_screen.png" />
+    <splash density="land-ldpi" src="res/splash_screen/splash_screen.png" />
+    <splash density="land-mdpi" src="res/splash_screen/splash_screen.png" />
+    <splash density="land-xhdpi" src="res/splash_screen/splash_screen.png" />
+    <splash density="land-xxhdpi" src="res/splash_screen/splash_screen.png" />
+    <splash density="port-hdpi" src="res/splash_screen/splash_screen.png" />
+    <splash density="port-ldpi" src="res/splash_screen/splash_screen.png" />
+    <splash density="port-mdpi" src="res/splash_screen/splash_screen.png" />
+    <splash density="port-xhdpi" src="res/splash_screen/splash_screen.png" />
+    <splash density="port-xxhdpi" src="res/splash_screen/splash_screen.png" />
+    <name>DemoFIContent</name>
+    <description>
+        A sample App.
+    </description>
+    <author email="danko.gutesa@vizlore.com" href="http://www.vizlore.com">
+        LCI Team
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+    <preference name="SplashScreen" value="screen" />
+    <preference name="SplashScreenDelay" value="5000" />
+    <preference name="Orientation" value="portrait" />
+</widget>
