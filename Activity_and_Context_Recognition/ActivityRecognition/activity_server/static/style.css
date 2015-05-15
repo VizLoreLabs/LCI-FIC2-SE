@@ -1,0 +1,10 @@
+.drop_zone {
+    border: 1px solid black;
+    width: 49%;
+    height: 100px;
+    display: inline-flex;
+}
+
+.file_chooser {
+    display: none;
+}

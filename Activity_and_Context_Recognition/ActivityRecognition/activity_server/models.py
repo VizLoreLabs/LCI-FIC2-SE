@@ -1,4 +1,6 @@
 from django.db import models
+from djangotoolbox.fields import ListField, DictField, EmbeddedModelField
+from django_mongodb_engine.contrib import MongoDBManager
 
 activity_table = {1: "Sitting Hand",
                   2: "Sitting Pocket",
@@ -41,38 +43,30 @@ activity_table_json = {
 }
 
 
-class DataRecord(models.Model):
-    user_id = models.CharField(max_length=40)
-    record_date = models.DateTimeField()
-
-    def get_activity_name(self):
-        return activity_table.get(self.activity.real)
-
-
-class WifiRecord(models.Model):
+class WifiEntry(models.Model):
     time_stamp = models.BigIntegerField()
-    data_record = models.ForeignKey(DataRecord)
-    wifi_name = models.CharField(max_length=32)
+    ssids = ListField()
 
 
-class LocationRecord(models.Model):
-    data_record = models.ForeignKey(DataRecord)
+class LocationEntry(models.Model):
     time_stamp = models.BigIntegerField()
     lat = models.FloatField()
     lon = models.FloatField()
 
 
-class AcceleratorRecord(models.Model):
-    data_record = models.ForeignKey(DataRecord)
-    time_stamp = models.BigIntegerField()
-    x = models.FloatField()
-    y = models.FloatField()
-    z = models.FloatField()
+class ActivityEntry(models.Model):
+    svm_ech = ListField()
+    svm = ListField()
+    dt_ech = ListField()
+    dt = ListField()
 
 
-class GyroscopeRecord(models.Model):
-    data_record = models.ForeignKey(DataRecord)
-    time_stamp = models.BigIntegerField()
-    x = models.FloatField()
-    y = models.FloatField()
-    z = models.FloatField()
+class DataRecord(models.Model):
+    user_id = models.CharField(max_length=40)
+    date_time = models.DateTimeField()
+    objects = MongoDBManager()
+
+    activity = EmbeddedModelField('ActivityEntry')
+    wifi = ListField(EmbeddedModelField('WifiEntry'))
+    location = ListField(EmbeddedModelField('LocationEntry'))
+

@@ -3,6 +3,7 @@ from data_load import load_data_enhanced
 from numpy import ndarray
 from sklearn import svm, tree, naive_bayes
 from sklearn.externals import joblib
+from sklearn.ensemble import GradientBoostingClassifier
 
 target1, data1 = load_data_enhanced("my_data_processed/activity_train.csv",
                                     "my_data_processed/acceleration_train_x.csv",
@@ -28,7 +29,7 @@ data = data[:, 0:21]
 target = ndarray(shape=(len(target),), dtype=int, buffer=np.asanyarray(target))
 
 
-clf = svm.SVC(probability=True)
+clf = GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0)
 clf.fit(data, target)
 joblib.dump(clf, '../ActivityRecognition/activity_server/classifier/acc_ech/classifier_svc.pkl')
 

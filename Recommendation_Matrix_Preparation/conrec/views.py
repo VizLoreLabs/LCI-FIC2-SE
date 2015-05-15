@@ -2,6 +2,7 @@ import json
 
 from django.http import HttpResponse
 from django.views.generic import View
+from django.shortcuts import render
 
 from conrec.toolbox import get_recommendation
 
@@ -15,8 +16,8 @@ class Recommend(View):
             lat = float(self.request.GET['lat'])
             ts = int(self.request.GET['ts'])
         else:
-	    response = HttpResponse("Insufficient data provided.")
-	    response.status_code = 400
+            response = HttpResponse("Insufficient data provided.")
+            response.status_code = 400
             return response
 
         if 'ac' in self.request.GET:
@@ -38,11 +39,23 @@ class Recommend(View):
         # +--------------------------------------+
 
         dict_res = get_recommendation(ts, {'lat': lat, 'lon': lon}, uuid, ignore)
-
-	response = HttpResponse(json.dumps(dict_res), content_type="application/json")
-	response.status_code = 200
+        response = HttpResponse(json.dumps(dict_res), content_type="application/json")
+        response.status_code = 200
         return response
 
     def post(self, request):
         data = 'Use GET method instead.'
-        return HttpResponse(data)
+        response = HttpResponse(data)
+        response.status_code = 200
+        return response
+
+
+class Test(View):
+    def get(self, request):
+        dict_res = get_recommendation(1429260495, {'lat': 45.2555, 'lon': 19.8454321}, "vfdjv36q9347fdvgsdv", None)
+        return HttpResponse(str(dict_res))
+
+
+class Matrix(View):
+    def get(self, request):
+        return render(request, 'matrix.html')

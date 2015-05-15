@@ -1,6 +1,0 @@
-web:
-  build: .
-  volumes:
-    - .:/code/
-  ports:
-    - "8000:8000"

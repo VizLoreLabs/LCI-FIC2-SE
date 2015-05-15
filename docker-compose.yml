@@ -1,0 +1,22 @@
+activityrq:
+  build: Activity_and_Context_Recognition/.
+  expose:
+    - 8089
+  ports:
+    - "8089:8089"
+frontpage:
+  build: Home_Page/.
+  expose:
+    - 8080
+  ports:
+    - "8080:8080"
+recommender:
+  build: Recommendation_Matrix_Preparation/.
+  links:
+   - activityrq
+   - frontpage
+  ports:
+    - "4545:4545"
+  expose:
+    - "4545"
+

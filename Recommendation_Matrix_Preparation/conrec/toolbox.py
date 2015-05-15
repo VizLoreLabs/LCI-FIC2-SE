@@ -1,13 +1,16 @@
-import datetime
 import urllib2
 import json
 import operator
 
-from math import radians, cos, sin, atan2, sqrt
+import requests
+import re
+import time
 
-from conrec.models import Ignore
-
-earth_radius = 6371500  # radius of the earth in meters
+from itertools import islice
+from threading import Thread
+from datetime import datetime, timedelta
+from conrec.models import Ignore, Keys
+from conrec.poi_module import fetch_poi, grade_distance, distance_between_gps_coordinates, POI_DP_URL
 
 '''                  Walking          Sitting         Standing          Default                  '''
 lookup_table = [[[2, 5, 1, 1, 4], [3, 4, 1, 1, 4], [3, 4, 1, 1, 4], [3, 5, 1, 1, 4]],  # Morning
@@ -18,6 +21,41 @@ lookup_table = [[[2, 5, 1, 1, 4], [3, 4, 1, 1, 4], [3, 4, 1, 1, 4], [3, 5, 1, 1,
 '''               [ Free time,    Morning,    Lunch,    Bar,    Transport ]                      '''
 
 
+class WritePOIToDatabase(Thread):
+    """
+    This class represents thread requesting POIs for given area.
+    """
+    def __init__(self, poi_dict):
+        self.poi_dict = poi_dict
+        super(WritePOIToDatabase, self).__init__()
+
+    def run(self):
+        for key in self.poi_dict:
+            headers = {'content-type': 'application/json'}
+            response = requests.post(POI_DP_URL + 'add_poi.php', data=json.dumps(self.poi_dict[key]), headers=headers)
+
+            if response.status_code == 400:
+                string = re.sub('[^A-Za-z0-9| |.]+', '', self.poi_dict[key]['fw_core']['name'].get(""))
+                split = string.split()
+                self.poi_dict[key]['fw_core']['name'] = {"": split[0] + " " + split[1] + " " + split[2]}
+                self.poi_dict[key]['fw_core']['short_name'] = {"": split[0]}
+
+                response = requests.post(POI_DP_URL + 'add_poi.php',
+                                         data=json.dumps(self.poi_dict[key]), headers=headers)
+
+                if response.status_code == 200:
+                    obj = json.loads(response.text)
+                    key = Keys(temp=key, real=obj['created_poi']['uuid'])
+                    key.save()
+                else:
+                    print "Error!"
+
+            elif response.status_code == 200:
+                obj = json.loads(response.text)
+                key = Keys(temp=key, real=obj['created_poi']['uuid'])
+                key.save()
+
+
 def get_time_section(milliseconds):
     """
     Tells as what part of the day is it. Day is split to several sections like: morning, noon, afternoon,
@@ -25,8 +63,8 @@ def get_time_section(milliseconds):
     :param milliseconds: Represents current time, in epoch (from January 1, 1970).
     :return: Number representing concrete part of the day. This number is used to reference to lookup table.
     """
-    time = datetime.datetime.fromtimestamp(milliseconds/1000)
-    hours = time.hour
+    time_s = datetime.fromtimestamp(milliseconds/1000)
+    hours = time_s.hour
     if 11 > hours >= 6:
         return 0  # Morning
     elif 15 > hours >= 11:
@@ -79,8 +117,7 @@ def get_user_activity(user_id):
     :param user_id: String representation of user unique identification number.
     :return: Returns answer from activity recognition provider.
     """
-    #url = 'http://130.211.136.203:8080/ac/?ac=1&uuid=%s&alg=svm&fs=standard&tp=600' % user_id
-    url = 'http://89.216.30.67:55555/ac/?ac=1&uuid=%s&alg=svm&fs=standard&tp=600' % user_id
+    url = 'http://activityrq:8089/ac/?ac=1&uuid=%s&alg=svm&fs=standard&tp=600' % user_id
     headers = dict()
     headers['Accept'] = 'application/json'
     result = None
@@ -90,25 +127,8 @@ def get_user_activity(user_id):
         result = urllib2.urlopen(request).read()
         activity = json.loads(result)
         return activity
-    except:
-    	return { "error": "Could not contact the server"} 
-
-
-def distance_between_gps_coordinates(lat_a, lon_a, lat_b, lon_b):
-    """
-    Calculate the distance in meters between two GPS points.
-    :param lat_a: Latitude of point A.
-    :param lon_a: Longitude of point A.
-    :param lat_b: Latitude of point B.
-    :param lon_b: Longitude of point B.
-    :return: Distance between two given points in meters.
-    """
-    d_lon = radians(lon_b - lon_a)
-    d_lat = radians(lat_b - lat_a)
-    a = ((sin(d_lat/2)) ** 2) + cos(radians(lat_a)) * cos(radians(lat_b)) * ((sin(d_lon/2)) ** 2)
-    c = 2 * atan2(sqrt(a), sqrt(1-a))
-
-    return earth_radius * c
+    except(urllib2.HTTPError, urllib2.URLError, Exception):
+        return {"error": "Could not contact the server"}
 
 
 def get_poi(lat, lng, radius):
@@ -126,7 +146,7 @@ def get_poi(lat, lng, radius):
     result = None
     try:
         request = urllib2.Request(url, None, headers=headers)
-        result = urllib2.urlopen(request, timeout = 10).read()
+        result = urllib2.urlopen(request, timeout=10).read()
     except:
         return dict()
     poi = json.loads(result)
@@ -194,12 +214,23 @@ def get_ignored_for_current_user(user_id):
     :return: List of POI identification, that are already ignored by user.
     """
     lst_ignored = []
-    user_exist = Ignore.objects.filter(uuid=user_id).exists()
-    if user_exist:
+    if Ignore.objects.filter(uuid=user_id).exists():
         i_poi = Ignore.objects.all().filter(uuid=user_id)
         for poi in i_poi:
             lst_ignored.append(poi.ignored)
     return lst_ignored
+
+
+def make_chunks(dictionary, n):
+    """
+    Function making chunks from given list. Number of chunks is defined by parameter.
+    :param dictionary: Data dictionary.
+    :param n: Number of chunks to be created.
+    :return: Returns generator generating list of dictionaries.
+    """
+    it = iter(dictionary)
+    for k in xrange(0, len(dictionary), n):
+        yield {k: dictionary[k] for k in islice(it, n)}
 
 
 def get_recommendation(time_stamp, coordinates, user_id, ignore):
@@ -211,8 +242,35 @@ def get_recommendation(time_stamp, coordinates, user_id, ignore):
     :param ignore: Identification of POI user ignored from previous recommend.
     :return: Dictionary representing answer for request to recommend.
     """
+
+    ''' Get all POIs in radius of 300 meters from user. '''
+
+    points_of_interest = fetch_poi(coordinates['lat'], coordinates['lon'], 300)
+
+    # First we have to assign writing jobs to threads.
+    length = len(points_of_interest[1])
+    poi_dict = dict()
+
+    # Add temporary keys and merge the two dictionaries.
+    poi_lst_of_dict = points_of_interest[0]
+    poi_lst_foursquare = dict()
+
+    for i in range(0, length):
+        poi_lst_foursquare['some-temporary-key-%s %d' % (user_id, (i+1))] = points_of_interest[1][i]
+
+    chunk_lst = make_chunks(poi_lst_foursquare, int(length/15) + 1)
+
+    threads = []
+    for chunk in chunk_lst:
+        t = WritePOIToDatabase(chunk)
+        threads.append(t)
+        t.start()
+
+    poi_lst_of_dict.update(poi_lst_foursquare)
+
     ''' Get all required data. '''
     part_of_day = get_time_section(time_stamp)
+
     act_rest_answer = get_user_activity(user_id)
     if 'error' in act_rest_answer:
         activity = 3  # If activity recognition provider encountered some error.
@@ -222,12 +280,8 @@ def get_recommendation(time_stamp, coordinates, user_id, ignore):
             req_act[k] = float(v)
         activity = get_curr_activity(req_act)
 
-    ''' Get all POIs in radius of 300 meters from user. '''
-    points_of_interest = get_poi(coordinates['lat'], coordinates['lon'], 300)
-    poi_dict = {}
-
     ''' Get id of all poi and rate them based on activity, context and distance. '''
-    for key, val in points_of_interest.iteritems():
+    for key, val in poi_lst_of_dict.iteritems():
         f_res = lookup_table[part_of_day][activity][decode_category(val['fw_core']['category'])]
         s_res = grade_distance(coordinates['lat'], coordinates['lon'], val['fw_core']['location']['wgs84'][
             'latitude'], val['fw_core']['location']['wgs84']['longitude'])
@@ -241,6 +295,9 @@ def get_recommendation(time_stamp, coordinates, user_id, ignore):
     for ig_poi in ignored:
         if ig_poi in poi_dict:
             del poi_dict[ig_poi]
+        elif ig_poi[:18] == 'some-temporary-key':
+            key = Keys.objects.filter(temp=ig_poi, time__gte=datetime.now()-timedelta(minutes=3))
+            del poi_dict[key.real]
 
     ''' Sort pois based on grades and return first 15 elements. '''
     sort_poi_lst = sorted(poi_dict.items(), key=operator.itemgetter(1), reverse=True)
@@ -250,5 +307,15 @@ def get_recommendation(time_stamp, coordinates, user_id, ignore):
     else:
         n_it = len(sort_poi_lst)
     for num in range(0, n_it):
-        ret_dict['POIS'].append({sort_poi_lst[num][0]: points_of_interest[sort_poi_lst[num][0]]})
+
+        ret_dict['POIS'].append({sort_poi_lst[num][0]: poi_lst_of_dict[sort_poi_lst[num][0]]})
+
+    # Delete old keys
+    keys = Keys.objects.filter(time__lt=(datetime.now()-timedelta(minutes=3)))
+    keys.delete()
+
+    # Wait until all threads finish the job.
+    for thread in threads:
+        thread.join()
+
     return ret_dict

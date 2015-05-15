@@ -1,1 +1,3 @@
 django
+requests
+mysql-python

@@ -1,0 +1,3 @@
+mongod --fork --logpath /var/log/mongodb.log
+service mongodb start
+python manage.py runserver 0.0.0.0:8089

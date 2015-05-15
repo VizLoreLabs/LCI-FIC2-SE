@@ -1,7 +1,7 @@
-__author__ = 'luigi'
 import urllib2
 import datetime
 import json
+import requests
 
 
 def test_recommend():
@@ -47,4 +47,32 @@ def get_poi(lat, lon, radius):
         return None
     return result
 
-print get_poi(41.4022365, 2.1887515, 500)
+
+def get_response_poi():
+    headers = dict()
+    headers['Content-type'] = 'application/json'
+    poi = {"fw_core": {"location": {"wgs84": {"latitude": 45.001,
+                                              "longitude": 19.001}},
+                                   "category": 'kategorija',
+                                   "name": {"": 'ime'},
+                                   "short_name": {"": 'kratko_ime'},
+                                   "label": {"": 'oznaka'},
+                                   "source": "foursquare"
+                               }
+           }
+    info = {"fw_core": {"location": {"wgs84": {"latitude": 45.011,
+                                              "longitude": 19.011}},
+                                   "category": 'kategorij',
+                                   "name": {"": 'im'},
+                                   "short_name": {"": 'kratko_im'},
+                                   "label": {"": 'oznak'},
+                                   "source": "foursquare"
+                               }
+           }
+    response = requests.post('http://localhost/poi_dp/add_poi.php', data=json.dumps(info), headers=headers)
+    obj = json.loads(response.text)
+    print obj['created_poi']['uuid']
+    print obj['created_poi']['timestamp']
+
+get_response_poi()
+
