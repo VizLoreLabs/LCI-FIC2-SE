@@ -7,6 +7,7 @@ Two server side modules are available:
 We also provide the Mobile application module for collecting contextual and sensory data from mobile devices. Additional information in the corresponding folder.
 
 Requirements:
+
     Django
     Python
     Cordova
