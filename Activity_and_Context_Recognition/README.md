@@ -20,3 +20,29 @@ Source code for the Activity and Context Recognition module of the Context Aware
 
 If problems occur during the installation or usage contact Dimitrije Jankov on dimitrije.jankov@vizlore.com
 
+## Linux (Ubuntu 12.04) installation:
+
+#download GitHub repo from https://github.com/VizLoreLabs/LCI-FIC2-SE/tree/master/Activity_and_Context_Recognition 
+
+cd Activity_and_Context_Recognition
+
+#install dependencies
+sudo apt-get update
+sudo apt-get install -y python-pip
+sudo apt-get install -y python-numpy
+sudo apt-get install -y python-scipy
+sudo apt-get install -y python-sklearn
+sudo apt-get install -y sqlite3
+sudo pip install -r requirements.txt
+
+#initialize dataset and classifier
+cd Classifier
+sudo python generate_dataset.py
+sudo python generate_classifier.py
+sudo python generate_classifier_acceleration.py
+sudo python generate_enhanced_classifier.py
+sudo python generate_enhanced_classifier_acceleration.py
+cd..
+cd ActivityRecognition
+sudo python manage.py migrate
+./manage.py runserver 0.0.0.0:8089
