@@ -3,10 +3,10 @@ Source code for the Activity and Context Recognition module of the Context Aware
 
 ## Windows installation:
 
-Install Python 2.7: https://www.python.org/download/releases/2.7/
-Install and configure Django framework: https://www.djangoproject.com/download/
-Install NumPy library: http://www.scipy.org/scipylib/download.html
-Install SciPy library: http://www.scipy.org/scipylib/download.html
+- Install Python 2.7: https://www.python.org/download/releases/2.7/
+- Install and configure Django framework: https://www.djangoproject.com/download/
+- Install NumPy library: http://www.scipy.org/scipylib/download.html
+- Install SciPy library: http://www.scipy.org/scipylib/download.html
 Install scikit-learn library: http://scikit-learn.org/dev/install.html
 Run generate_dataset.py (located in the /Classifier folder)
 Run generate_classifier.py (located in the /Classifier folder)
