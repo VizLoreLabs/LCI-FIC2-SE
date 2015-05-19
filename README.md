@@ -5,3 +5,11 @@ Two server side modules are available:
   - Recommendation Matrix Preparation module for composing recommendation matrix based on context/activity profiles and POI attributes. Additional information in the corresponding folder.
 
 We also provide the Mobile application module for collecting contextual and sensory data from mobile devices. Additional information in the corresponding folder.
+
+Requirements:
+
+    Django
+    Python
+    Cordova
+    JavaScript
+
