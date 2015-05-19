@@ -18,8 +18,6 @@ Source code for the Activity and Context Recognition module of the Context Aware
 - An example on how to use the REST API can be found on the default webpage on {ip}:{port}
 - You can collect your own sensory data sets (training and test data sets) with the Android application: https://github.com/VizLoreLabs/LCI-FIC2-SE/tree/master/SensorCollector
 
-If problems occur during the installation or usage contact Dimitrije Jankov on dimitrije.jankov@vizlore.com
-
 ## Linux (Ubuntu 12.04) installation:
 
 - download GitHub repo from https://github.com/VizLoreLabs/LCI-FIC2-SE/tree/master/Activity_and_Context_Recognition 
@@ -42,3 +40,5 @@ If problems occur during the installation or usage contact Dimitrije Jankov on d
 - cd ActivityRecognition
 - sudo python manage.py migrate
 - ./manage.py runserver 0.0.0.0:8089
+
+If problems occur during the installation or usage contact Dimitrije Jankov on dimitrije.jankov@vizlore.com
