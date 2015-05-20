@@ -7,9 +7,9 @@ Source code for the Activity and Context Recognition module of the Context Aware
 - Install Python 2.7: https://www.python.org/download/releases/2.7/
 - Install pymongo: http://www.lfd.uci.edu/~gohlke/pythonlibs/#pymongo
 - Install and configure Django framework: https://www.djangoproject.com/download/
--   pip install git+https://github.com/django-nonrel/django@nonrel-1.6
--   pip install git+https://github.com/django-nonrel/djangotoolbox
--   pip install git+https://github.com/django-nonrel/mongodb-engine
+  -   pip install git+https://github.com/django-nonrel/django@nonrel-1.6
+  -   pip install git+https://github.com/django-nonrel/djangotoolbox
+  -   pip install git+https://github.com/django-nonrel/mongodb-engine
 - Install NumPy library: http://www.scipy.org/scipylib/download.html
 - Install SciPy library: http://www.scipy.org/scipylib/download.html
 - Install scikit-learn library: http://scikit-learn.org/dev/install.html
