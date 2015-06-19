@@ -256,7 +256,7 @@ def get_recommendation(time_stamp, coordinates, user_id, ignore):
     poi_lst_foursquare = dict()
 
     for i in range(0, length):
-        poi_lst_foursquare['some-temporary-key-%s %d' % (user_id, (i+1))] = points_of_interest[1][i]
+        poi_lst_foursquare['some-temporary-key-%s-%d' % (user_id, (i+1))] = points_of_interest[1][i]
 
     chunk_lst = make_chunks(poi_lst_foursquare, int(length/15) + 1)
 

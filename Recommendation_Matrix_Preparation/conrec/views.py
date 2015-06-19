@@ -56,6 +56,3 @@ class Test(View):
         return HttpResponse(str(dict_res))
 
 
-class Matrix(View):
-    def get(self, request):
-        return render(request, 'matrix.html')

@@ -14,13 +14,12 @@ RUN pecl install mongo
 RUN touch /etc/php5/apache2/conf.d/mongo.ini
 RUN echo "extension=mongo.so" >> /etc/php5/apache2/conf.d/mongo.ini
 RUN /etc/init.d/apache2 restart
-RUN /etc/init.d/postgresql start
 
 RUN apt-get install -y mysql-server mysql-client mysql-workbench libmysqlclient-dev && mysqladmin -u root password vizlore
 RUN apt-get install -y python-dev
 
 USER postgres
-RUN /etc/init.d/postgresql start &&\
+RUN /etc/init.d/postgresql start && sleep 120 &&\
     createuser gisuser &&\
     createdb -O gisuser poidatabase && psql -d poidatabase -f /usr/share/postgresql/9.3/contrib/postgis-2.1/postgis.sql\
     && psql -d poidatabase -f /usr/share/postgresql/9.3/contrib/postgis-2.1/spatial_ref_sys.sql\
@@ -38,7 +37,7 @@ WORKDIR /WeX/poi/install_scripts/
 RUN mkdir -p /data/db
 RUN apt-get install -y wget
 
-RUN /etc/init.d/postgresql restart && mongod --fork --logpath /var/log/mongodb.log \
+RUN /etc/init.d/postgresql restart && sleep 120 && mongod --fork --logpath /var/log/mongodb.log \
     && ./create_tables.sh \
     && cp -r /WeX/poi/php /var/www/poi_dp \
     && wget http://getcomposer.org/composer.phar \
@@ -51,4 +50,4 @@ ADD . /code/
 RUN service mysql start && pip install -r requirements.txt
 RUN service mysql start restart && mysql -u root --password=vizlore -e "create database conrec" && python manage.py makemigrations && python manage.py migrate
 EXPOSE 4545
-ENTRYPOINT /code/run_server.sh
+CMD /code/run_server.sh
